@@ -11,40 +11,24 @@ export default async function Home() {
   let error: Error | null = null;
 
   try {
-    // First, try to fetch the most recent dialogue
-    const { data: dialogues, error: fetchError } = await supabase
+    // Create a new dialogue for each page visit
+    const { data: newDialogue, error: insertError } = await supabase
       .from('dialogues')
-      .select('id')
-      .order('created_at', { ascending: false })
-      .limit(1)
+      .insert({})
+      .select()
 
-    if (fetchError) {
-      console.error('Error fetching dialogues:', fetchError)
-      throw fetchError
+    if (insertError) {
+      console.error('Error creating new dialogue:', insertError)
+      throw insertError
     }
 
-    if (dialogues && dialogues.length > 0) {
-      dialogueId = dialogues[0].id;
+    if (newDialogue && newDialogue.length > 0) {
+      dialogueId = newDialogue[0].id;
     } else {
-      // If no dialogue exists, create a new one
-      const { data: newDialogue, error: insertError } = await supabase
-        .from('dialogues')
-        .insert({})
-        .select()
-
-      if (insertError) {
-        console.error('Error creating new dialogue:', insertError)
-        throw insertError
-      }
-
-      if (newDialogue && newDialogue.length > 0) {
-        dialogueId = newDialogue[0].id;
-      } else {
-        throw new Error('Failed to create new dialogue')
-      }
+      throw new Error('Failed to create new dialogue')
     }
   } catch (e) {
-    console.error('Error creating or fetching dialogue:', e)
+    console.error('Error creating dialogue:', e)
     error = e instanceof Error ? e : new Error('An unknown error occurred')
   }
 
@@ -62,7 +46,7 @@ export default async function Home() {
             <Chat dialogueId={dialogueId} />
           ) : (
             <div>
-              <p>Error: Could not create or fetch a dialogue. Please try again.</p>
+              <p>Error: Could not create a new dialogue. Please try again.</p>
               {error && <p>Details: {error.message}</p>}
             </div>
           )}
