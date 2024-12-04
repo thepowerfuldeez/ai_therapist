@@ -1,0 +1,35 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Dialogue {
+  id        String   @id @default(cuid())
+  userId    String
+  messages  Message[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Message {
+  id         String   @id @default(cuid())
+  dialogueId String
+  dialogue   Dialogue @relation(fields: [dialogueId], references: [id])
+  role       String
+  content    String
+  createdAt  DateTime @default(now())
+}
+
+model Feedback {
+  id         String   @id @default(cuid())
+  dialogueId String
+  dialogue   Dialogue @relation(fields: [dialogueId], references: [id])
+  helpful    Boolean
+  feeling    String
+  createdAt  DateTime @default(now())
+}
+
